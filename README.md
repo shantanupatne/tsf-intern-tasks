@@ -5,8 +5,8 @@ Tasks completed as an Intern in TSF.
 
 ## Task 2
 Supervised Machine Learning. Creating a simple linear regression model to fit the data. This is done with sklearn as well as without.  
-[Sklearn](./Task2/Task2_sklearn.ipynb)  
-[Algorithm](./Task2/Task2_algo.ipynb)
+[With](./Task2/Task2_sklearn.ipynb)  
+[Without](./Task2/Task2_algo.ipynb)
 
 ---
 
