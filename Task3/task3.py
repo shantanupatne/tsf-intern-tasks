@@ -43,8 +43,8 @@ for i in range(1, 15):
   wcss.append(k.inertia_)
 
 plt.plot(range(1,15), wcss)
-plt.xlabel("WCSS")
-plt.ylabel("Clusters")
+plt.ylabel("WCSS")
+plt.xlabel("Clusters")
 plt.title("WCSS vs Cluster")
 plt.grid(True)
 plt.show()
