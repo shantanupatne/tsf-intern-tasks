@@ -5,8 +5,8 @@ Tasks completed as an Intern in TSF.
 
 ## Task 2
 Supervised Machine Learning. Creating a simple linear regression model to fit the data. This is done with sklearn as well as without.  
-[SKLEARN](./Task2/Task2_sklearn.ipynb)  
-[ALGO](./Task2/Task2_algo.ipynb)
+[Sklearn](./Task2/Task2_sklearn.ipynb)  
+[Algorithm](./Task2/Task2_algo.ipynb)
 
 ---
 
@@ -17,5 +17,5 @@ Unsupervised Machine Learning. Clustering the "Iris" dataset by finding the opti
 ---
 
 ## Task 4
-Exploring Decision Trees. Creating and visualizing a decision tree classifier using sklearn and matplotlib.
+Exploring Decision Trees. Creating and visualizing a decision tree classifier using sklearn and matplotlib.  
 [Link](./Task4/Task4.ipynb)
