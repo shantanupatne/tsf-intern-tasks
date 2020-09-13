@@ -1,0 +1,196 @@
+---
+title: "Task5"
+author: "Shantanu Patne"
+date: "9/13/2020"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.width = 16, fig.height = 12, message = FALSE, warning = FALSE)
+```
+# Business Analytics
+
+```{r import, echo=TRUE, results='hide'}
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+library(shiny)
+```
+
+## Data Preprocessing
+
+### Read data
+
+```{r read, echo=TRUE}
+store <- read.csv("SampleSuperstore.csv")
+head(store)
+```
+
+
+### Check for NAs and duplicates
+
+We need only to drop duplicates.
+```{r drop, echo=TRUE}
+store <- distinct(store)
+nrow(store)
+```
+
+## Analysis
+
+```{r state_plot}
+state_data <- store %>% 
+    select(State, Sales, Profit, Discount) %>% 
+    group_by(State) %>% 
+    summarise(Sales = sum(Sales)/1000, Profit = sum(Profit)/1000, Discount = sum(Discount), .groups = "keep")
+
+shinyApp(
+  ui = fluidPage(
+
+      # Application title
+      titlePanel("1. State Analysis"),
+      plotOutput("statePlot", height = 670),
+      hr(),
+      # Sidebar with a slider input for number of bins 
+      fluidRow(
+          column(3, offset = 4,
+                 h4("Select Parameter"),
+                 selectInput("choice",
+                          "Parameter:", choices = c("Sales", "Profit", "Discount"))
+          )
+      )
+  ),
+  server = function(input, output) {
+      output$statePlot <- renderPlot({
+          
+          label <- switch(input$choice,
+                          "Sales" = "Sales (thousand Dollars)",
+                          "Profit" = "Profit (thousand Dollars)",
+                          "Discount" = "Discount (Dollars)")
+          
+          fill <- switch(input$choice,
+                          "Sales" = "darkblue",
+                          "Profit" = "darkgreen",
+                          "Discount" = "darkred")
+          
+          ggplot(state_data, aes(x = reorder(State, !!as.symbol(input$choice)), y = !!as.symbol(input$choice))) + 
+              geom_col(fill = fill) + 
+              theme(axis.title = element_text(size = 15), 
+                    axis.text.x = element_text(angle = 90, size = 10),
+                    title = element_text(size = 25)) + 
+              labs(y = label, x = "State", title = paste(input$choice, "per State"))
+              
+      })
+  },
+  options = list(height = 1000)
+)
+```
+
+#### From this we can see that the states providing greatest discounts are facing the greatest losses
+
+```{r cat_plot}
+shinyApp(
+  ui = fluidPage(
+
+      # Application title
+      titlePanel("2. Category Analysis"),
+      plotOutput("categoryPlot", height = 500),
+      hr(),
+      # Sidebar with a slider input for number of bins 
+      fluidRow(
+          column(3, offset = 2,
+                 h4("Select State"),
+                 selectInput("state",
+                          "States:", choices = distinct(as.data.frame(sort(store$State))))
+          ),
+          column(3,
+                 h4("Select Parameter"),
+                 selectInput("param",
+                          "Parameters:", choices = c("Sales", "Profit", "Quantity", "Discount"))
+          )
+      ),
+      
+      fluidRow(
+        h4("Thus, we can analyze the subcategorical profits and sales for each state. For e.g., Delaware collects the greatest profits from a subcategory that sells the lowest amount : Copiers.")
+      )
+  ),
+  server = function(input, output) {
+      output$categoryPlot <- renderPlot({
+        
+        plotdata <- store %>% 
+          filter(State == input$state) %>% 
+          group_by(Sub.Category, Category) %>% 
+          summarise(Field = sum(!!as.symbol(input$param)), .groups = "keep")
+        
+        label <- switch(input$param,
+                        "Sales" = "Sales (Dollars)",
+                        "Profit" = "Profit (Dollars)",
+                        "Discount" = "Discount (Dollars)",
+                        "Quantity" = "Quantity")
+          
+        ggplot(plotdata, aes(x = reorder(Sub.Category, Field), y = Field)) + 
+              geom_col(aes(fill = Category)) + scale_fill_brewer(palette = "Dark2") +
+              theme(axis.title = element_text(size = 15), 
+                    axis.text.x = element_text(angle = 90, size = 10),
+                    title = element_text(size = 25)) + 
+              labs(y = label, x = "Subcategory", title = paste(input$param, "vs SubCategory for", input$state))
+              
+      })
+  },
+  options = list(height = 950)
+)
+```
+
+```{r Seg_plot}
+shinyApp(
+  ui = fluidPage(
+      # Application title
+      titlePanel("3. Segment Analysis"),
+      plotOutput("segmentPlot", height = 500),
+      hr(),
+      # Sidebar with a slider input for number of bins 
+      fluidRow(
+          column(3, offset = 2,
+                 h4("Select State"),
+                 selectInput("state",
+                          "States:", choices = distinct(as.data.frame(sort(store$State))))
+          ),
+          column(3,
+                 h4("Select Parameter"),
+                 selectInput("param",
+                          "Parameters:", choices = c("Sales", "Profit", "Quantity", "Discount"))
+          )
+      ),
+      
+      fluidRow(
+        h4("From this, we can analyze which segment to focus on in which States.")
+      )
+  ),
+  server = function(input, output) {
+      output$segmentPlot <- renderPlot({
+        
+        plotdata <- store %>% 
+          filter(State == input$state) %>% 
+          group_by(Segment, Category) %>% 
+          summarise(Field = sum(!!as.symbol(input$param)), .groups = "keep")
+        
+        label <- switch(input$param,
+                        "Sales" = "Sales (Dollars)",
+                        "Profit" = "Profit (Dollars)",
+                        "Discount" = "Discount (Dollars)",
+                        "Quantity" = "Quantity")
+          
+        ggplot(plotdata, aes(x = reorder(Segment, Field), y = Field, fill = Category)) + 
+              geom_col(position = "dodge") + 
+              scale_fill_brewer(palette = "Dark2") +
+              theme(axis.title = element_text(size = 15), 
+                    axis.text.x = element_text(size = 10),
+                    title = element_text(size = 25)) + 
+              labs(y = label, x = "Segment", title = paste(input$param, "vs Segment for", input$state))
+              
+      })
+  },
+  options = list(height = 950)
+)
+```
+
