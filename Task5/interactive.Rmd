@@ -101,7 +101,7 @@ shinyApp(
           column(3, offset = 2,
                  h4("Select State"),
                  selectInput("state",
-                          "States:", choices = distinct(as.data.frame(sort(store$State))))
+                          "States:", choices = c("Total", distinct(as.data.frame(sort(store$State)))))
           ),
           column(3,
                  h4("Select Parameter"),
@@ -117,12 +117,20 @@ shinyApp(
   server = function(input, output) {
       output$categoryPlot <- renderPlot({
         
-        plotdata <- store %>% 
-          filter(State == input$state) %>% 
-          group_by(Sub.Category, Category) %>% 
-          summarise(Field = sum(!!as.symbol(input$param)), .groups = "keep")
+        if(input$state == "Total"){
+          plotdata <- store %>%
+            group_by(Sub.Category, Category) %>% 
+            summarise(Field = sum(!!as.symbol(input$param)), .groups = "keep")
+          title <- "Subcategory"
+        } else {
+          plotdata <- store %>% 
+            filter(State == input$state) %>% 
+            group_by(Sub.Category, Category) %>% 
+            summarise(Field = sum(!!as.symbol(input$param)), .groups = "keep")
+          title <- paste("Subcategory for", input$state)
+        }
         
-        label <- switch(input$param,
+        ylabel <- switch(input$param,
                         "Sales" = "Sales (Dollars)",
                         "Profit" = "Profit (Dollars)",
                         "Discount" = "Discount (Dollars)",
@@ -133,7 +141,7 @@ shinyApp(
               theme(axis.title = element_text(size = 15), 
                     axis.text.x = element_text(angle = 90, size = 10),
                     title = element_text(size = 25)) + 
-              labs(y = label, x = "Subcategory", title = paste(input$param, "vs SubCategory for", input$state))
+              labs(y = ylabel, x = "Subcategory", title = paste(input$param, "vs", title))
               
       })
   },
@@ -153,7 +161,7 @@ shinyApp(
           column(3, offset = 2,
                  h4("Select State"),
                  selectInput("state",
-                          "States:", choices = distinct(as.data.frame(sort(store$State))))
+                          "States:", choices = c("Total",distinct(as.data.frame(sort(store$State)))))
           ),
           column(3,
                  h4("Select Parameter"),
@@ -169,12 +177,21 @@ shinyApp(
   server = function(input, output) {
       output$segmentPlot <- renderPlot({
         
-        plotdata <- store %>% 
-          filter(State == input$state) %>% 
-          group_by(Segment, Category) %>% 
-          summarise(Field = sum(!!as.symbol(input$param)), .groups = "keep")
+        if(input$state == "Total"){
+          plotdata <- store %>%
+            group_by(Segment, Category) %>% 
+            summarise(Field = sum(!!as.symbol(input$param)), .groups = "keep")
+          title <- "Segment"
+        } else {
+          plotdata <- store %>% 
+            filter(State == input$state) %>% 
+            group_by(Segment, Category) %>% 
+            summarise(Field = sum(!!as.symbol(input$param)), .groups = "keep")
+          title <- paste("Segment for", input$state)
+        }
         
-        label <- switch(input$param,
+        
+        ylabel <- switch(input$param,
                         "Sales" = "Sales (Dollars)",
                         "Profit" = "Profit (Dollars)",
                         "Discount" = "Discount (Dollars)",
@@ -186,8 +203,7 @@ shinyApp(
               theme(axis.title = element_text(size = 15), 
                     axis.text.x = element_text(size = 10),
                     title = element_text(size = 25)) + 
-              labs(y = label, x = "Segment", title = paste(input$param, "vs Segment for", input$state))
-              
+              labs(y = ylabel, x = "Segment", title = paste(input$param, "vs", title))
       })
   },
   options = list(height = 950)
